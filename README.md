@@ -2,6 +2,7 @@
 This is a Starter Repository for RAG. In this we will be building out a PDF RAG Agent to chat with. The documents in pdf format will be the contect corpus to use for embeddings that we will index in the pinecone graph index.
 
 ## Initial Setup
+- fork and clone this repository
 - Create a pinecone account [here](https://www.pinecone.io/)
 - setup an index and call it `pineidx`
 - create a Virtual Env `python3 -m venv .venv`
