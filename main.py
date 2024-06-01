@@ -27,13 +27,18 @@ prompt = "hello sailor!"
 
 
 loader = DirectoryLoader("docs", glob="*.pdf", loader_cls=PyPDFLoader)
-raw_docs = loader.load()
+docs = loader.load()
 
 text_splitter = RecursiveCharacterTextSplitter( chunk_size=1000, chunk_overlap=100 )
-documents = text_splitter.split_documents( raw_docs )
+documents = text_splitter.split_documents( docs )
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=openai_api_key)
+# embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=openai_api_key)
+embeddings = OpenAIEmbeddings( model= EMBEDDING_MODEL, openai_api_key = openai_api_key )
 
-print(f"Going to add {len(documents)} to Pinecone")
+print(f"Going to add {len(documents)} to Pinecone index: { PINECONE_INDEX }")
 
-# print( prompt )
+vector_store = PineconeVectorStore( index_name = PINECONE_INDEX, embedding=embeddings, pinecone_api_key=pinecone_api_key)
+# vector_store.add_documents(documents)
+
+
+print( prompt )
