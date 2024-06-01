@@ -14,16 +14,6 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-prompt = 'Give me the average cost of a ride?'
-
-# Note: we must use the same embedding model that we used when uploading the docs
-# Querying the vector database for "relevant" docs then create a retriever
-# create a context by using the retriever and getting the relevant docs based on the prompt
-# show the thought process by looping over all relevant docs, showing the source and the content
-# build a prompt template using the query and the context and build the prompt with context
-# Asking the LLM for a response from our prompt with the provided context using CatOpenAI and invoking it
-# Then print the results content
-
 embeddings = OpenAIEmbeddings(
         model = EMBEDDING_MODEL,
         openai_api_key = openai_api_key
@@ -34,6 +24,8 @@ vector_store = PineconeVectorStore(
                                    embedding=embeddings,
                                    pinecone_api_key=pinecone_api_key
                                    )
+
+prompt = 'List all of the surcharges and taxes added to my rides'
 
 def upload():
     loader = DirectoryLoader(
@@ -50,7 +42,7 @@ def upload():
 
     documents = text_splitter.split_documents( docs )
     print(f"Going to add {len(documents)} to Pinecone index: { PINECONE_INDEX }")
-    # vector_store.add_documents( documents )
+    vector_store.add_documents( documents )
 
 def analyse():
     embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
@@ -60,6 +52,7 @@ def analyse():
 
     for doc in context:
         print(f"Source: {doc.metadata['source']}\nContent: {doc.page_content}\n\n")
+
     print('--------------------------')
 
 
