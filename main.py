@@ -4,7 +4,6 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_pinecone import PineconeVectorStore
@@ -26,14 +25,10 @@ vector_store = PineconeVectorStore(
                                    pinecone_api_key=pinecone_api_key
                                    )
 
-prompt = 'List all of the surcharges and taxes added to my rides'
+prompt = 'List the merchant names who have the most vegetarian products'
 
 def upload():
-    # loader = DirectoryLoader(
-    #         "docs",
-    #         glob="*.csv", loader_cls = PyPDFLoader
-    #         )
-    loader = CSVLoader( file_path="./docs/products.csv")
+    loader = CSVLoader( file_path="./docs/products.csv" )
 
     docs = loader.load()
 
@@ -44,7 +39,7 @@ def upload():
 
     documents = text_splitter.split_documents( docs )
     print(f"Going to add {len(documents)} to Pinecone index: { PINECONE_INDEX }")
-    # vector_store.add_documents( documents )
+    vector_store.add_documents( documents )
 
 def analyse():
     embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
@@ -72,5 +67,5 @@ def analyse():
 
     print( results.content )
 
-upload()
-# analyse()
+# upload()
+analyse()
