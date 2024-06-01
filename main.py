@@ -6,7 +6,7 @@ from langchain_openai import OpenAIEmbeddings
 from constants import *
 
 # the prompt: we will be changing this soon
-prompt = "hello world!"
+prompt = "hello sailor!"
 
 # Note: we must use the same embedding model that we used when uploading the docs
 
@@ -23,3 +23,4 @@ prompt = "hello world!"
 
 # Asking the LLM for a response from our prompt with the provided context using CatOpenAI and invoking it
 # Then print the results content
+print( prompt )
