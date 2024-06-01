@@ -14,8 +14,7 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-# the prompt: we will be changing this soon
-prompt = "hello sailor!"
+prompt = 'Give me the average cost of a ride?'
 
 # Note: we must use the same embedding model that we used when uploading the docs
 # Querying the vector database for "relevant" docs then create a retriever
@@ -25,20 +24,58 @@ prompt = "hello sailor!"
 # Asking the LLM for a response from our prompt with the provided context using CatOpenAI and invoking it
 # Then print the results content
 
+embeddings = OpenAIEmbeddings(
+        model = EMBEDDING_MODEL,
+        openai_api_key = openai_api_key
+        )
 
-loader = DirectoryLoader("docs", glob="*.pdf", loader_cls=PyPDFLoader)
-docs = loader.load()
+vector_store = PineconeVectorStore(
+                                   index_name = PINECONE_INDEX,
+                                   embedding=embeddings,
+                                   pinecone_api_key=pinecone_api_key
+                                   )
 
-text_splitter = RecursiveCharacterTextSplitter( chunk_size=1000, chunk_overlap=100 )
-documents = text_splitter.split_documents( docs )
+def upload():
+    loader = DirectoryLoader(
+            "docs",
+            glob="*.pdf", loader_cls = PyPDFLoader
+            )
 
-# embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=openai_api_key)
-embeddings = OpenAIEmbeddings( model= EMBEDDING_MODEL, openai_api_key = openai_api_key )
+    docs = loader.load()
 
-print(f"Going to add {len(documents)} to Pinecone index: { PINECONE_INDEX }")
+    text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size = 1000,
+            chunk_overlap = 100
+            )
 
-vector_store = PineconeVectorStore( index_name = PINECONE_INDEX, embedding=embeddings, pinecone_api_key=pinecone_api_key)
-# vector_store.add_documents(documents)
+    documents = text_splitter.split_documents( docs )
+    print(f"Going to add {len(documents)} to Pinecone index: { PINECONE_INDEX }")
+    # vector_store.add_documents( documents )
+
+def analyse():
+    embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+
+    retriever = vector_store.as_retriever()
+    context = retriever.get_relevant_documents( prompt )
+
+    for doc in context:
+        print(f"Source: {doc.metadata['source']}\nContent: {doc.page_content}\n\n")
+    print('--------------------------')
 
 
-print( prompt )
+    print( f"Prompt: { prompt }" )
+
+    template = PromptTemplate(
+            template = "{query} Context: {context}",
+            input_variables = ["query", "context"]
+            )
+
+    prompt_with_context = template.invoke( {"query": prompt, "context": context} )
+
+    llm = ChatOpenAI(temperature=0.5)
+    results = llm.invoke( prompt_with_context )
+
+    print( results.content )
+
+# upload()
+analyse()
